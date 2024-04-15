@@ -34,21 +34,24 @@ export default class UsersRepository {
     return user;
   }
 
-  updateUser(id, name, email, password) {
-    const user = this.getUserById(id);
+  async updateUser(id, name, email, password) {
+    const user = await this.getUserById(id);
 
     if (!user) {
       return null;
     }
-
-    user.name = name;
-    user.email = email;
-    user.password = password;
-
-    return user;
+   const updatedUser = await this.pg.oneOrNone(
+      "UPDATE users SET name = $1, email = $2, password = $3 WHERE id = $4 RETURNING *",
+      [name, email, password, id]         
+    );
+    
+    return updastedUser;
   }
 
-  deleteUser(id) {
-    this.users = this.users.filter((user) => user.id !== id);
+  async deleteUser(id) {
+   await this.pg.none(
+     "DELETE FROM users WHERE id = $1",
+     id
+   );
   }
 }
